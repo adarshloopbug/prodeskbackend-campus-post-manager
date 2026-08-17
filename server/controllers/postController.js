@@ -117,23 +117,36 @@ const createPost = async (req, res) => {
 
     // 2. Handle image upload if a file was selected by the user
     if (req.file) {
+      const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+      const apiKey = process.env.CLOUDINARY_API_KEY;
+      const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+      if (!cloudName || !apiKey || !apiSecret) {
+        return res.status(500).json({
+          success: false,
+          message:
+            "Cloudinary credentials not configured in Vercel. Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your Vercel Dashboard (Settings → Environment Variables).",
+        });
+      }
+
       try {
         // Ensure Cloudinary SDK is initialized with latest .env credentials
         cloudinary.config({
-          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-          api_key: process.env.CLOUDINARY_API_KEY,
-          api_secret: process.env.CLOUDINARY_API_SECRET,
+          cloud_name: cloudName,
+          api_key: apiKey,
+          api_secret: apiSecret,
         });
 
         // Upload the user's exact file buffer directly to Cloudinary
         const uploadResult = await uploadToCloudinary(req.file.buffer);
         imageUrl = uploadResult.secure_url;
       } catch (uploadError) {
-        console.error("Cloudinary Upload Error:", uploadError.message);
+        console.error("Cloudinary Upload Error:", uploadError);
+        const errMsg = uploadError?.message || uploadError?.error?.message || "Upload stream failed";
         return res.status(500).json({
           success: false,
-          message: `Cloudinary upload failed: ${uploadError.message}. Please check your credentials in server/.env.`,
-          error: uploadError.message,
+          message: `Cloudinary upload failed: ${errMsg}. Please verify your Cloudinary keys in Vercel Environment Variables.`,
+          error: errMsg,
         });
       }
     }
