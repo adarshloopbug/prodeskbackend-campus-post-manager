@@ -14,8 +14,12 @@ import PostCard from "./components/PostCard";
 import Loading from "./components/Loading";
 
 // Base API URL pointing to our Express backend
-// We read this from Vite environment variables (VITE_API_URL) with a fallback to port 5000.
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/posts";
+// If VITE_API_URL is defined, use it. Otherwise, fallback to port 5000 on localhost and relative /api/posts in production (Vercel)
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:5000/api/posts"
+    : "/api/posts");
 
 function App() {
   // ============================================================================

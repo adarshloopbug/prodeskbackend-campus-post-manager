@@ -135,7 +135,12 @@ app.use((req, res) => {
 // ==============================================================================
 // START SERVER
 // ==============================================================================
-app.listen(PORT, () => {
-  console.log(` Backend server running at: http://localhost:${PORT}`);
-  console.log(` API Endpoint: http://localhost:${PORT}/api/posts`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(` Backend server running at: http://localhost:${PORT}`);
+    console.log(` API Endpoint: http://localhost:${PORT}/api/posts`);
+  });
+}
+
+module.exports = app;
+
